@@ -1,0 +1,12 @@
+import { readFile, mkdir, writeFile, rm, copyFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const assets={};
+for(const [name,type]of Object.entries({'index.html':'text/html; charset=utf-8','app.js':'text/javascript; charset=utf-8','style.css':'text/css; charset=utf-8'}))assets['/'+name]={body:await readFile(path.join(root,'public',name),'utf8'),type};
+let ai=await readFile(path.join(root,'server/ai.js'),'utf8');let worker=await readFile(path.join(root,'server/worker.js'),'utf8');
+ai=ai.replace(/^export /gm,'');worker=worker.replace(/^import .*?;\n/,'').replace(/^export /gm,'');
+const output=ai+'\n'+worker+'\nconst assets='+JSON.stringify(assets)+';\nexport default createWorker(assets);\n';
+await rm(path.join(root,'dist'),{recursive:true,force:true});await mkdir(path.join(root,'dist/server'),{recursive:true});await mkdir(path.join(root,'dist/.openai'),{recursive:true});
+await writeFile(path.join(root,'dist/server/index.js'),output);await copyFile(path.join(root,'.openai/hosting.json'),path.join(root,'dist/.openai/hosting.json'));
+console.log('Built portable Worker application.');
