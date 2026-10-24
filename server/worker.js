@@ -1,13 +1,13 @@
 import { AppError, validateInput, resolveConfig, runAI } from './ai.js';
-const security={'x-content-type-options':'nosniff','referrer-policy':'same-origin','permissions-policy':'camera=(), microphone=(), geolocation=()','content-security-policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'"};
+const security={'x-content-type-options':'nosniff','referrer-policy':'same-origin','permissions-policy':'camera=(), microphone=(), geolocation=()','content-security-policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'"};
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{...security,'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});}
 export function createWorker(assets={},fetcher=(...args)=>globalThis.fetch(...args)){return {async fetch(request,env={}){
  const url=new URL(request.url);
  if(url.pathname==='/api/status'&&request.method==='GET'){
-  let baseUrl = env.AI_BASE_URL || 'https://api.deepseek.com';
-  let model = env.AI_MODEL || 'deepseek-flash';
+  let baseUrl = env.AI_BASE_URL || 'https://lax.toklens.ai/v1';
+  let model = env.AI_MODEL || 'tokennnn/gpt-6-astra';
   try { const parsed = new URL(baseUrl); baseUrl = parsed.hostname; } catch { baseUrl = 'configured service'; }
-  return json({configured:!!env.AI_API_KEY?.trim(),storage:'browser',version:'1.2.0',provider:baseUrl === 'api.deepseek.com' ? 'DeepSeek' : baseUrl,model});
+  return json({configured:!!env.AI_API_KEY?.trim(),storage:'browser',version:'1.3.0',provider:baseUrl === 'lax.toklens.ai' ? (env.AI_PROVIDER_NAME || '比赛方 MAGPIE') : baseUrl === 'api.deepseek.com' ? 'DeepSeek' : baseUrl,model,expiresAt:env.AI_EXPIRES_AT || null});
  }
  if(url.pathname==='/api/ai'){
   if(request.method!=='POST')return json({error:'仅支持 POST 请求。'},405);
