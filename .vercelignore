@@ -1,0 +1,14 @@
+.git
+.vercel
+.openai
+.env
+.env.*
+.dev.vars
+node_modules
+dist
+tests
+scripts
+output
+*.zip
+*.md
+.DS_Store
