@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="重要沟通前，有人陪你理清，再练一遍。初入职场沟通伙伴。">
+  <title>初入职场沟通伙伴</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="connection.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="#" aria-label="回到首页"><span class="brand-icon">伴</span><span>初入职场<br><strong>沟通伙伴</strong></span></a>
+    <div class="side-caption">每一次开口，都多一点底气。</div>
+    <div id="progress" class="progress" aria-label="准备进度"></div>
+    <div class="side-bottom"><button class="quiet" id="records">◷ 我的准备</button><button class="quiet" id="open-guide">▷ 使用指引</button><p>双场景 AI 沟通练习<br>记录仅保存在此浏览器</p></div>
+  </aside>
+  <div class="workspace">
+  <header class="topbar"><span class="mobile-brand">初入职场沟通伙伴</span><span class="desktop-label">YOUR COMMUNICATION PARTNER</span><div class="top-actions"><button class="connection-button" id="connection" type="button" aria-haspopup="dialog"><span class="connection-dot" aria-hidden="true"></span><span id="connection-label">AI 连接中…</span></button><button class="text-button" id="top-guide">使用指引 <span>↗</span></button></div></header>
+    <div id="operation" role="status" aria-live="polite"></div><main id="app" tabindex="-1"></main>
+    <footer>先照顾你的感受，再一起想办法。<span>AI 内容仅作准备参考，重要事实请自行确认</span></footer>
+  </div>
+</div>
+<dialog id="modal"><div id="modal-body"></div></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
+</body></html>
