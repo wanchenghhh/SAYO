@@ -34,7 +34,6 @@ export function validateOutput(action, value, input) {
   if (action==='extract') {
     if(!value.fields||typeof value.fields!=='object')throw new AppError('AI 未返回梳理结果，请重试。',502,'INVALID_AI_OUTPUT');
     const fields={};for(const key of ['existing','added','constraint','original','known','goal'])fields[key]=string(value.fields[key]);
-    // A quote is treated as verbatim only if it can be found in the supplied story.
     if(fields.original&&!input.story.includes(fields.original))fields.original='';
     const keys=['delivery','scope','time','standard','purpose'];const used=new Set();
     const questions=Array.isArray(value.questions)?value.questions.filter(q=>keys.includes(q?.key)&&typeof q.text==='string'&&q.text.trim()&&!used.has(q.key)&&(used.add(q.key)||true)).slice(0,5).map(q=>({key:q.key,label:({delivery:'交付物',scope:'范围',time:'时间',standard:'完成标准',purpose:'使用目的'})[q.key],text:string(q.text,250),selected:q.selected!==false})):[];
@@ -47,8 +46,14 @@ export function validateOutput(action, value, input) {
 }
 export function resolveConfig(env = {}, clientConfig = null) {
   const browserKey = string(clientConfig?.apiKey, 500);
+  if (clientConfig?.useDefault === false && !browserKey) throw new AppError('请先填写你自己的 AI Key，或恢复产品默认配置。', 503, 'AI_NOT_CONFIGURED');
   const key = browserKey || string(env.AI_API_KEY, 500);
   if (!key) throw new AppError('AI 服务尚未就绪，请联系产品管理员。你的输入已保留。', 503, 'AI_NOT_CONFIGURED');
+  if (!browserKey && env.AI_EXPIRES_AT) {
+    const expiry = Date.parse(env.AI_EXPIRES_AT);
+    if (!Number.isFinite(expiry)) throw new AppError('AI 服务配置异常，请联系产品管理员。', 503, 'INVALID_CONFIG');
+    if (Date.now() >= expiry) throw new AppError('比赛方 AI 服务已结束或暂时不可用，请联系产品管理员。', 503, 'AI_SERVICE_EXPIRED');
+  }
   let base;
   try { base = new URL(browserKey ? (string(clientConfig?.baseUrl, 500) || 'https://api.deepseek.com') : (env.AI_BASE_URL || 'https://api.deepseek.com')); }
   catch { throw new AppError('AI 服务配置异常，请联系产品管理员。', 503, 'INVALID_CONFIG'); }
@@ -58,7 +63,7 @@ export function resolveConfig(env = {}, clientConfig = null) {
   }
   const model = (browserKey ? string(clientConfig?.model, 120) : '') || string(env.AI_MODEL, 120) || 'deepseek-flash';
   if (!/^[a-zA-Z0-9_./:@+-]{1,120}$/.test(model)) throw new AppError('AI 服务配置异常，请联系产品管理员。', 503, 'INVALID_CONFIG');
-  return { key, model, url: base.href.replace(/\/$/, '') + '/chat/completions', deepseek: host === 'api.deepseek.com', gpt6: /^gpt-6[.-]/.test(model), source: browserKey ? 'browser' : 'default' };
+  return { key, model, url: base.href.replace(/\/$/, '') + '/chat/completions', deepseek: host === 'api.deepseek.com', gpt6: /(?:^|\/)gpt-6[.-]/.test(model), source: browserKey ? 'browser' : 'default' };
 }
 export async function runAI(input, config, fetcher = (...args) => globalThis.fetch(...args)) {
   const {clientConfig: _clientConfig, ...modelInput} = input;
@@ -66,7 +71,7 @@ export async function runAI(input, config, fetcher = (...args) => globalThis.fet
   const payload = { model: config.model, messages: [{ role: 'system', content: system }, { role: 'user', content: JSON.stringify(modelInput) }], response_format: { type: 'json_object' }, stream: false };
   if (config.gpt6) {
     payload.max_completion_tokens = input.action === 'connect' ? 256 : 4000;
-    payload.reasoning_effort = config.model === 'gpt-6-luna' ? 'none' : 'low';
+    payload.reasoning_effort = /(?:^|\/)gpt-6-luna$/.test(config.model) ? 'none' : 'low';
   } else {
     payload.max_tokens = input.action === 'connect' ? 128 : 3000;
   }
@@ -75,7 +80,6 @@ export async function runAI(input, config, fetcher = (...args) => globalThis.fet
   const timer = setTimeout(() => controller.abort(), 65000);
   let response, data;
   try {
-    // Manual redirects also work in Workers and keep credentials on the configured host.
     response = await fetcher(config.url, { method: 'POST', redirect: 'manual', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + config.key }, body: JSON.stringify(payload), signal: controller.signal });
     if (response.status >= 300 && response.status < 400) throw new AppError('AI 服务地址发生跳转，请联系产品管理员。', 502, 'INVALID_CONFIG');
     if (!response.ok) {
