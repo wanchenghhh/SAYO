@@ -145,3 +145,9 @@ dialog[open]{display:flex;flex-direction:column}
 .composer-submit-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-left:auto}
 .practice-layout .composer-submit-actions .secondary{min-height:52px;padding:12px 20px;border-radius:15px;white-space:nowrap}
 @media(max-width:420px){.practice-layout .chat-actions{flex-wrap:wrap}.composer-submit-actions{flex:1 1 100%}.practice-layout .composer-submit-actions button{flex:1}}
+
+/* Keep composition guidance and workflow navigation separate from sending. */
+.reply-help{margin:10px 0 0;color:var(--muted);font-size:13px;line-height:1.6}
+.practice-navigation{display:flex;justify-content:flex-end;gap:12px;margin-top:24px}
+.practice-navigation>button{min-width:120px;min-height:48px}
+@media(max-width:420px){.practice-navigation>button{width:100%}}
