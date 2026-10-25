@@ -21,7 +21,7 @@ export function validateInput(body) {
   if (Array.isArray(body.transcript) && body.transcript.length > 60) throw new AppError('单次练习最多 30 次回应，请先复盘。');
   const transcript = Array.isArray(body.transcript) ? body.transcript.map(m=>({role:m.role === 'user' ? 'user' : 'boss',text:string(m.text,1500)})).filter(m=>m.text) : [];
   const rawClient = body.clientConfig && typeof body.clientConfig === 'object' && !Array.isArray(body.clientConfig) ? body.clientConfig : null;
-  const clientConfig = rawClient ? { apiKey: string(rawClient.apiKey, 500), baseUrl: string(rawClient.baseUrl, 500), model: string(rawClient.model, 120) } : null;
+  const clientConfig = rawClient ? { useDefault: rawClient.useDefault !== false, provider: string(rawClient.provider, 30), apiKey: string(rawClient.apiKey, 500), baseUrl: string(rawClient.baseUrl, 500), model: string(rawClient.model, 120) } : null;
   const result = {action:body.action, scene:body.scene,story:string(body.story,5000),fields,questions,preference:string(body.preference,100),tone:body.tone==='简洁'?'简洁':'自然',transcript,clientConfig};
   if (body.action === 'extract' && result.story.length < 8) throw new AppError('请再写具体一点，至少 8 个字。');
   if (['feedback','hint'].includes(body.action) && !transcript.some(m=>m.role==='user')) throw new AppError('先完成一次回应，再请求反馈或提示。');
@@ -34,6 +34,7 @@ export function validateOutput(action, value, input) {
   if (action==='extract') {
     if(!value.fields||typeof value.fields!=='object')throw new AppError('AI 未返回梳理结果，请重试。',502,'INVALID_AI_OUTPUT');
     const fields={};for(const key of ['existing','added','constraint','original','known','goal'])fields[key]=string(value.fields[key]);
+    // A quote is treated as verbatim only if it can be found in the supplied story.
     if(fields.original&&!input.story.includes(fields.original))fields.original='';
     const keys=['delivery','scope','time','standard','purpose'];const used=new Set();
     const questions=Array.isArray(value.questions)?value.questions.filter(q=>keys.includes(q?.key)&&typeof q.text==='string'&&q.text.trim()&&!used.has(q.key)&&(used.add(q.key)||true)).slice(0,5).map(q=>({key:q.key,label:({delivery:'交付物',scope:'范围',time:'时间',standard:'完成标准',purpose:'使用目的'})[q.key],text:string(q.text,250),selected:q.selected!==false})):[];
@@ -52,7 +53,7 @@ export function resolveConfig(env = {}, clientConfig = null) {
   if (!browserKey && env.AI_EXPIRES_AT) {
     const expiry = Date.parse(env.AI_EXPIRES_AT);
     if (!Number.isFinite(expiry)) throw new AppError('AI 服务配置异常，请联系产品管理员。', 503, 'INVALID_CONFIG');
-    if (Date.now() >= expiry) throw new AppError('比赛方 AI 服务已结束或暂时不可用，请联系产品管理员。', 503, 'AI_SERVICE_EXPIRED');
+    if (Date.now() >= expiry) throw new AppError('默认 AI 服务已到期或暂时不可用，请联系产品管理员。', 503, 'AI_SERVICE_EXPIRED');
   }
   let base;
   try { base = new URL(browserKey ? (string(clientConfig?.baseUrl, 500) || 'https://api.deepseek.com') : (env.AI_BASE_URL || 'https://api.deepseek.com')); }
@@ -80,6 +81,7 @@ export async function runAI(input, config, fetcher = (...args) => globalThis.fet
   const timer = setTimeout(() => controller.abort(), 65000);
   let response, data;
   try {
+    // Manual redirects also work in Workers and keep credentials on the configured host.
     response = await fetcher(config.url, { method: 'POST', redirect: 'manual', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + config.key }, body: JSON.stringify(payload), signal: controller.signal });
     if (response.status >= 300 && response.status < 400) throw new AppError('AI 服务地址发生跳转，请联系产品管理员。', 502, 'INVALID_CONFIG');
     if (!response.ok) {
