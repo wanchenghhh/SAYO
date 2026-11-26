@@ -7,7 +7,7 @@ import {createWorker} from '../server/worker.js';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const port=Number(process.env.PORT||8765),host=process.env.HOST||'127.0.0.1';
 const server=http.createServer(async(req,res)=>{try{
- const assets={};for(const[name,type]of Object.entries({'index.html':'text/html; charset=utf-8','app.js':'text/javascript; charset=utf-8','style.css':'text/css; charset=utf-8'}))assets['/'+name]={body:await readFile(path.join(root,'public',name),'utf8'),type};
+ const assets={};for(const[name,type]of Object.entries({'index.html':'text/html; charset=utf-8','app.js':'text/javascript; charset=utf-8','style.css':'text/css; charset=utf-8','connection.css':'text/css; charset=utf-8'}))assets['/'+name]={body:await readFile(path.join(root,'public',name),'utf8'),type};
  const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>100000){res.writeHead(413);res.end('Input too large');return;}chunks.push(chunk);}
  const method=req.method||'GET';const request=new Request(`http://${req.headers.host}${req.url}`,{method,headers:req.headers,body:['GET','HEAD'].includes(method)?undefined:Buffer.concat(chunks)});
  // Read local configuration per request so a saved key takes effect without restarting.
