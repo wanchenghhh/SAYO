@@ -1,0 +1,18 @@
+{
+  ".env.example": "78096f93da48c1051cd5137dd8f9ac063ac0166aa88604177acce5621799b8c0",
+  ".gitignore": "55d06beebff29156b264159db3249ec8ba0bf83368febcc3d7b857b67ca82c4b",
+  "api/ai.js": "a03d13e76bfe6d20a7f7b0b245647cf5ffdf6f89a7350ce9fa5e0c99c870e0ba",
+  "api/status.js": "f62cbe15a09250c654e65d6d8ecdb54473a1d6fbd1c353f2483495f636befc48",
+  "package.json": "bd286893f61f82900be2547eee1ca05b3545b25cd08a108d626ed8ff4faf44e0",
+  "public/app.js": "d2599e38acea059915ad5804d3e6ee3d03b3a96627bbbb765e521a40db0ff29c",
+  "public/connection.css": "a3bff1ccec40c51aca38ee8e3812efee386fa7e3fe21fe2ec2c9f37a79c64e93",
+  "public/index.html": "399e7a24aaa55ab204d36f0a0b74a8dc4efd07a4d968647ff70075d3b36530a8",
+  "public/style.css": "7e7830f8f456fc1c8eeb292cc73d8d9f7e3ff500b18518364728f53889815d21",
+  "scripts/build.mjs": "9b02123e8df8ffae3fb998fbcd19d4775ee3aa0f648ae44f3bd95b592d92cc62",
+  "scripts/configure-ai.mjs": "076cbd9b835b70ad284fbb65a0bbb1c53e7e9b56524c5183a905406de351d687",
+  "scripts/dev.mjs": "46d9627a8e274d9deb62b317ae697757ec5e1378d7e9ef2a0a0c5f67f604c081",
+  "scripts/validate-artifact.mjs": "39d9df53ac2461962466d5965c5f4d06f08024ceca40605952d8b753b88d41fd",
+  "server/ai.js": "c0b0b96bf8a42b446caa7e4c81cd96b209e07cc07807cf693b04cb2f70709bd5",
+  "server/worker.js": "721009f14616b4ac482e679e3c0d4b40e72eb1504685e767b447dd47d91b6ff2",
+  "vercel.json": "1efb6ab3874a402a538c73596bce7145ef38531fd84009cafa5c67abb79c5454"
+}
